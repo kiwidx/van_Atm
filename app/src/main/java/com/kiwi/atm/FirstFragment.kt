@@ -14,7 +14,7 @@ import com.kiwi.atm.databinding.FragmentFirstBinding
  * A simple [Fragment] subclass as the default destination in the navigation.
  */
 class FirstFragment : Fragment() {
-
+    var remember = false
     private var _binding: FragmentFirstBinding? = null
 
     // This property is only valid between onCreateView and
@@ -25,16 +25,23 @@ class FirstFragment : Fragment() {
         inflater: LayoutInflater, container: ViewGroup?,
         savedInstanceState: Bundle?
     ): View? {
-
         _binding = FragmentFirstBinding.inflate(inflater, container, false)
         return binding.root
-
     }
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
         //若user先前有打過資料，則可記住user的資料且直接替user輸入
         val pref= requireContext().getSharedPreferences("atm",Context.MODE_PRIVATE)
+        val checked = pref.getBoolean("rem_username", false)
+        binding.cbRemember.isChecked = checked
+        binding.cbRemember.setOnCheckedChangeListener { compoundButton, checked ->
+            remember = checked
+            pref.edit().putBoolean("rem_username", remember).apply()
+            if (!checked) {
+                pref.edit().putString("USER", "").apply()
+            }
+        }
         val prefUser = pref.getString("USER", "")
         if(prefUser != ""){
             binding.edUsername.setText(prefUser)
@@ -46,6 +53,7 @@ class FirstFragment : Fragment() {
             if( username == "jack" && password == "1234"){
                 //save username to preference
                 //val pref = requireContext().getSharedPreferences("atm",Context.MODE_PRIVATE)
+            if(remember)
                 pref.edit()
                     .putString("USER", username)
                     .putInt("LEVEL",3)
